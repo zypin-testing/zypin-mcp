@@ -68,12 +68,19 @@ The project follows a simple, modular architecture:
 
 ### Installation
 
+#### Option 1: Standalone Installation
 ```bash
 npm install https://github.com/zypin-testing/zypin-mcp
 ```
 
+#### Option 2: Integrated with Zypin Core (Recommended)
+```bash
+npm install -g https://github.com/zypin-testing/zypin-core
+```
+
 ### Basic Usage
 
+#### Standalone Usage
 Add to your MCP client configuration:
 
 ```json
@@ -87,14 +94,39 @@ Add to your MCP client configuration:
 }
 ```
 
+#### Integrated Usage (Zypin Core)
+```bash
+# Start MCP server through Zypin CLI
+zypin mcp
+
+# With options
+zypin mcp --browser firefox --headed
+```
+
+**Benefits of Zypin Core Integration:**
+- ✅ Unified CLI interface
+- ✅ Automatic updates with `zypin update`
+- ✅ Integrated with testing workflow
+- ✅ Consistent command structure
+
 ### Command Line Options
 
+#### Standalone Usage
 ```bash
 # Basic usage
 npx zypin-mcp
 
 # With options
 npx zypin-mcp --browser firefox --headed --width 1920 --height 1080
+```
+
+#### Integrated Usage (Zypin Core)
+```bash
+# Basic usage
+zypin mcp
+
+# With options
+zypin mcp --browser firefox --headed --width 1920 --height 1080
 ```
 
 **Available Options:**
@@ -136,6 +168,54 @@ npx zypin-mcp --browser firefox --headed --width 1920 --height 1080
 - `wait_for(selector, timeout?)` - Wait for element to appear
 - `evaluate(script)` - Run JavaScript on page
 - `close()` - Close browser
+
+## Integration with Zypin Core
+
+Zypin MCP is now integrated into the Zypin Core framework, providing a unified testing and automation experience.
+
+### Complete Testing Workflow
+
+```bash
+# 1. Create a test project
+zypin create-project my-tests --template selenium/basic-webdriver
+cd my-tests
+npm install
+
+# 2. Start testing services
+zypin start --packages selenium
+
+# 3. Run traditional tests
+zypin run --input test.js
+
+# 4. Start MCP server for browser automation
+zypin mcp --browser chromium --headed
+
+# 5. Update everything
+zypin update
+```
+
+### MCP Client Configuration
+
+When using Zypin Core integration, configure your MCP client to use the integrated command:
+
+```json
+{
+  "mcpServers": {
+    "zypin-browser": {
+      "command": "zypin",
+      "args": ["mcp", "--browser", "chromium"]
+    }
+  }
+}
+```
+
+### Benefits of Integration
+
+- **Unified Interface**: All testing tools accessible through one CLI
+- **Automatic Updates**: MCP server updates with `zypin update`
+- **Consistent Workflow**: Same command patterns across all tools
+- **Integrated Monitoring**: Health checks and process management
+- **Template Support**: MCP projects can be created from templates
 
 ## Examples
 
