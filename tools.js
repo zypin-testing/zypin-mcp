@@ -256,7 +256,176 @@ export function createTools(browser) {
         await browser.close();
         return { success: true, message: 'Browser closed' };
       }
+    },
+
+    // Template Selection Tool
+    {
+      name: 'show_available_templates',
+      description: 'Hiển thị các template Zypin có sẵn và cho user chọn',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          projectName: { type: 'string', description: 'Tên project test' }
+        },
+        required: ['projectName']
+      },
+      handler: async ({ projectName }) => {
+        try {
+          // Get available templates from zypin system
+          const { execSync } = await import('child_process');
+          
+          // Use zypin CLI to get available templates
+          const command = `zypin create-project --help`;
+          const helpOutput = execSync(command, { encoding: 'utf8', stdio: 'pipe' });
+          
+          // Parse available templates from help output
+          const availableTemplates = await parseTemplatesFromHelp(helpOutput);
+          
+          return {
+            success: true,
+            data: {
+              projectName,
+              availableTemplates,
+              message: `Có ${availableTemplates.length} template(s) có sẵn cho project "${projectName}"`
+            },
+            message: `📋 Available Templates:\n${availableTemplates.map((t, i) => `${i + 1}. ${t.name} - ${t.description}`).join('\n')}\n\nChọn template bằng cách sử dụng: create_test_project với template tương ứng`
+          };
+        } catch (error) {
+          return { success: false, message: `Lỗi lấy danh sách template: ${error.message}` };
+        }
+      }
+    },
+    {
+      name: 'create_test_project',
+      description: 'Tạo test project với template được chọn',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          projectName: { type: 'string', description: 'Tên project test' },
+          template: { type: 'string', description: 'Template được chọn (ví dụ: selenium/basic-webdriver)' },
+          workingDirectory: { type: 'string', description: 'Đường dẫn thư mục hiện tại (lấy từ pwd command)' }
+        },
+        required: ['projectName', 'template', 'workingDirectory']
+      },
+      handler: async ({ projectName, template, workingDirectory }) => {
+        try {
+          // Use existing zypin template system
+          const { execSync } = await import('child_process');
+          const path = await import('path');
+          
+          // Use the working directory provided by AI (from pwd command)
+          const currentDir = workingDirectory;
+          
+          // First, validate that the template exists
+          const availableTemplates = await getTemplatesFromSystem();
+          const templateExists = availableTemplates.some(t => t.name === template);
+          
+          if (!templateExists) {
+            return {
+              success: false,
+              message: `❌ Template "${template}" không tồn tại!`,
+              data: {
+                requestedTemplate: template,
+                availableTemplates: availableTemplates,
+                suggestion: `Vui lòng chọn một trong các template có sẵn:\n${availableTemplates.map((t, i) => `${i + 1}. ${t.name}`).join('\n')}`
+              }
+            };
+          }
+          
+          // Create project using zypin CLI in the specified directory
+          const command = `zypin create-project ${projectName} --template ${template} --force`;
+          execSync(command, { stdio: 'pipe', cwd: currentDir });
+          
+          return {
+            success: true,
+            message: `✅ Project "${projectName}" đã được tạo thành công với template ${template}`,
+            data: {
+              projectPath: path.default.join(currentDir, projectName),
+              relativePath: `./${projectName}`,
+              workingDirectory: currentDir,
+              template,
+              nextSteps: [
+                `cd ${projectName}`,
+                'npm install',
+                'zypin start --packages selenium',
+                template.includes('cucumber') ? 'zypin run --input features/' : 'zypin run --input test.js'
+              ]
+            }
+          };
+        } catch (error) {
+          return { success: false, message: `Lỗi tạo project: ${error.message}` };
+        }
+      }
     }
   ];
 }
+
+// Helper function to parse templates from zypin help output
+async function parseTemplatesFromHelp(helpOutput) {
+  try {
+    const lines = helpOutput.split('\n');
+    const templates = [];
+    const seenTemplates = new Set();
+    
+    // Dynamic template parsing patterns
+    const templatePatterns = [
+      // Pattern: package/template-name
+      /(\w+)\/([\w-]+)/g,
+      // Pattern: --template package/template-name
+      /--template\s+(\w+)\/([\w-]+)/g
+    ];
+    
+    // Extract templates from help output
+    lines.forEach(line => {
+      templatePatterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(line)) !== null) {
+          const packageName = match[1];
+          const templateName = match[2];
+          const fullName = `${packageName}/${templateName}`;
+          
+          if (!seenTemplates.has(fullName)) {
+            seenTemplates.add(fullName);
+            
+            templates.push({
+              name: fullName,
+              description: fullName // Simple: just use template name as description
+            });
+          }
+        }
+      });
+    });
+    
+    // If no templates found, try to get from zypin system directly
+    if (templates.length === 0) {
+      return await getTemplatesFromSystem();
+    }
+    
+    return templates;
+  } catch (error) {
+    // Fallback to system templates
+    return await getTemplatesFromSystem();
+  }
+}
+
+// Get templates from zypin system directly
+async function getTemplatesFromSystem() {
+  try {
+    const { execSync } = await import('child_process');
+    
+    // Try to get templates from zypin system
+    const command = `zypin create-project --help 2>/dev/null || echo "No help available"`;
+    const output = execSync(command, { encoding: 'utf8', stdio: 'pipe' });
+    
+    // Parse from output
+    return await parseTemplatesFromHelp(output);
+  } catch (error) {
+    // Ultimate fallback
+    return [
+      { name: 'selenium/basic-webdriver', description: 'selenium/basic-webdriver' },
+      { name: 'selenium/cucumber-bdd', description: 'selenium/cucumber-bdd' }
+    ];
+  }
+}
+
 
