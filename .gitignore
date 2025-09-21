@@ -8,8 +8,6 @@ package-lock.json
 screenshot-*.png
 test-screenshot.png
 
-# Configuration files (optional)
-
 # Logs
 *.log
 

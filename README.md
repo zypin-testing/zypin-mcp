@@ -17,7 +17,6 @@ zypin-mcp/
 ├── index.js                  # Main CLI entry point and MCP server
 ├── browser.js                # Simple browser wrapper using Playwright
 ├── tools.js                  # MCP tools implementation (16 tools)
-├── config.js                 # Configuration validation and parsing
 ├── test.js                   # Basic functionality tests
 ├── .gitignore                # Git ignore rules
 ├── README.md                 # This documentation
@@ -29,7 +28,6 @@ zypin-mcp/
 - **`index.js`**: Main entry point that sets up the MCP server, handles CLI arguments, and manages the browser lifecycle
 - **`browser.js`**: Simple wrapper around Playwright that provides essential browser automation methods
 - **`tools.js`**: Defines all 16 MCP tools with their schemas and handlers
-- **`config.js`**: Handles configuration validation and provides default settings
 - **`test.js`**: Basic test suite to verify core functionality
 - **`.gitignore`**: Minimal git ignore rules for essential exclusions
 
@@ -49,12 +47,6 @@ The project follows a simple, modular architecture:
                        │   tools.js      │
                        │   (16 MCP Tools)│
                        └─────────────────┘
-                              │
-                              ▼
-                       ┌─────────────────┐
-                       │   config.js     │
-                       │   (Validation)  │
-                       └─────────────────┘
 ```
 
 ### Component Interactions
@@ -63,13 +55,12 @@ The project follows a simple, modular architecture:
 2. **index.js** receives MCP protocol messages and routes them to appropriate handlers
 3. **tools.js** defines the available tools and their schemas
 4. **browser.js** executes the actual browser automation commands
-5. **config.js** validates and provides configuration settings
 
 ### Key Design Principles
 
 - **Single Responsibility**: Each file has a clear, focused purpose
 - **Minimal Dependencies**: Only 3 essential packages
-- **Simple Configuration**: 5 core options vs 50+ in full version
+- **Command Line Only**: Simple CLI options, no config files
 - **Essential Tools Only**: 16 tools covering 80% of use cases
 - **Error Handling**: Clear error messages and graceful failures
 
@@ -90,13 +81,13 @@ Add to your MCP client configuration:
   "mcpServers": {
     "zypin-browser": {
       "command": "npx",
-      "args": ["zypin-mcp"]
+      "args": ["https://github.com/zypin-testing/zypin-mcp"]
     }
   }
 }
 ```
 
-### Configuration Options
+### Command Line Options
 
 ```bash
 # Basic usage
@@ -104,27 +95,21 @@ npx zypin-mcp
 
 # With options
 npx zypin-mcp --browser firefox --headed --width 1920 --height 1080
-
-# With config file
-npx zypin-mcp --config ./config.json
 ```
 
-**Command Line Options:**
+**Available Options:**
 - `--browser <browser>`: Browser to use (chromium, firefox, webkit) - default: chromium
 - `--headless`: Run in headless mode (default)
 - `--headed`: Run in headed mode (overrides headless)
 - `--width <width>`: Viewport width - default: 1280
 - `--height <height>`: Viewport height - default: 720
 - `--timeout <timeout>`: Default timeout in milliseconds - default: 30000
-- `--config <path>`: Path to configuration file
 
 **Default Settings:**
 - Browser: chromium
 - Mode: headless
 - Viewport: 1280x720
 - Timeout: 30000ms
-
-You can override these defaults with command-line options or create a `config.json` file if needed.
 
 ## Available Tools
 
@@ -206,7 +191,7 @@ await select({
 |---------|------------------|---------------------|
 | Bundle Size | ~10MB | ~50MB |
 | Dependencies | 3 | 15+ |
-| Configuration | 5 options | 50+ options |
+| Configuration | CLI only | 50+ options |
 | Tools | 15 essential | 30+ advanced |
 | Setup Time | 2 minutes | 10+ minutes |
 | Use Cases | 80% of scenarios | 100% of scenarios |
@@ -229,7 +214,7 @@ MIT
 node test.js
 
 # Test MCP server startup
-npx zypin-mcp --help
+npx https://github.com/zypin-testing/zypin-mcp --help
 ```
 
 ### Adding New Tools
@@ -288,7 +273,7 @@ npx playwright install chromium
 ```
 
 **MCP client connection issues:**
-- Ensure the server starts without errors: `npx zypin-mcp --help`
+- Ensure the server starts without errors: `npx https://github.com/zypin-testing/zypin-mcp --help`
 - Check that your MCP client configuration is correct
 - Verify the server is running in the correct directory
 
@@ -297,17 +282,17 @@ npx playwright install chromium
 - Ensure elements exist on the page before interacting
 - Use `wait_for` tool to wait for elements to appear
 
-**Configuration issues:**
+**Command line issues:**
 - Check that browser type is one of: `chromium`, `firefox`, `webkit`
 - Ensure viewport dimensions are positive numbers
-- If using a config file, verify it has valid JSON syntax
+- Verify command line arguments are valid
 
 ### Debug Mode
 
 Run with debug output:
 ```bash
 # See server startup messages
-npx zypin-mcp 2>&1 | tee server.log
+npx https://github.com/zypin-testing/zypin-mcp 2>&1 | tee server.log
 ```
 
 ### Getting Help

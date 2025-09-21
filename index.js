@@ -19,7 +19,6 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { SimpleBrowser } from './browser.js';
 import { createTools } from './tools.js';
-import { parseConfig, createDefaultConfig } from './config.js';
 
 program
   .name('zypin-mcp')
@@ -31,30 +30,26 @@ program
   .option('-w, --width <width>', 'Viewport width', '1280')
   .option('-l, --height <height>', 'Viewport height', '720')
   .option('-t, --timeout <timeout>', 'Default timeout in milliseconds', '30000')
-  .option('-c, --config <path>', 'Path to configuration file')
   .parse();
 
 const options = program.opts();
 
 /**
  * Main application entry point
- * Initializes configuration, browser, and MCP server
+ * Initializes browser and MCP server with command line options
  */
 async function main() {
   try {
-    // Parse configuration from file or command line
-    let config;
-    if (options.config) {
-      config = await parseConfig(options.config);
-    } else {
-      config = createDefaultConfig();
-      // Override with command line options
-      if (options.browser) config.browser = options.browser;
-      if (options.headed) config.headless = false;
-      if (options.width) config.viewport.width = parseInt(options.width);
-      if (options.height) config.viewport.height = parseInt(options.height);
-      if (options.timeout) config.timeout = parseInt(options.timeout);
-    }
+    // Create configuration from command line options
+    const config = {
+      browser: options.browser || 'chromium',
+      headless: options.headed ? false : (options.headless !== false),
+      viewport: {
+        width: parseInt(options.width) || 1280,
+        height: parseInt(options.height) || 720
+      },
+      timeout: parseInt(options.timeout) || 30000
+    };
 
     console.error('Starting Zypin MCP Server...');
     console.error(`Browser: ${config.browser}, Headless: ${config.headless}`);

@@ -15,13 +15,7 @@ import { chromium, firefox, webkit } from 'playwright-core';
 
 export class SimpleBrowser {
   constructor(config = {}) {
-    this.config = {
-      browser: 'chromium',
-      headless: true,
-      viewport: { width: 1280, height: 720 },
-      timeout: 30000,
-      ...config
-    };
+    this.config = config;
     this.browser = null;
     this.context = null;
     this.page = null;
