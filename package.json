@@ -1,0 +1,30 @@
+{
+  "name": "zypin-mcp",
+  "version": "1.0.0",
+  "description": "Simple MCP server for browser automation using Playwright",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "zypin-mcp": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "playwright-core": "^1.40.0",
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "commander": "^11.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "playwright",
+    "browser-automation",
+    "ai"
+  ],
+  "author": "Zypin",
+  "license": "MIT"
+}
