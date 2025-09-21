@@ -78,7 +78,7 @@ The project follows a simple, modular architecture:
 ### Installation
 
 ```bash
-npm install zypin-mcp
+npm install https://github.com/zypin-testing/zypin-mcp
 ```
 
 ### Basic Usage
