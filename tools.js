@@ -261,11 +261,11 @@ export function createTools(browser) {
     // Template Selection Tool
     {
       name: 'show_available_templates',
-      description: 'Hiển thị các template Zypin có sẵn và cho user chọn',
+      description: 'Show available Zypin templates and let user choose',
       inputSchema: {
         type: 'object',
         properties: {
-          projectName: { type: 'string', description: 'Tên project test' }
+          projectName: { type: 'string', description: 'Test project name' }
         },
         required: ['projectName']
       },
@@ -286,24 +286,24 @@ export function createTools(browser) {
             data: {
               projectName,
               availableTemplates,
-              message: `Có ${availableTemplates.length} template(s) có sẵn cho project "${projectName}"`
+              message: `${availableTemplates.length} template(s) available for project "${projectName}"`
             },
-            message: `📋 Available Templates:\n${availableTemplates.map((t, i) => `${i + 1}. ${t.name} - ${t.description}`).join('\n')}\n\nChọn template bằng cách sử dụng: create_test_project với template tương ứng`
+            message: `📋 Available Templates:\n${availableTemplates.map((t, i) => `${i + 1}. ${t.name} - ${t.description}`).join('\n')}\n\nChoose template by using: create_test_project with the corresponding template`
           };
         } catch (error) {
-          return { success: false, message: `Lỗi lấy danh sách template: ${error.message}` };
+          return { success: false, message: `Error getting template list: ${error.message}` };
         }
       }
     },
     {
       name: 'create_test_project',
-      description: 'Tạo test project với template được chọn',
+      description: 'Create test project with selected template',
       inputSchema: {
         type: 'object',
         properties: {
-          projectName: { type: 'string', description: 'Tên project test' },
-          template: { type: 'string', description: 'Template được chọn (ví dụ: selenium/basic-webdriver)' },
-          workingDirectory: { type: 'string', description: 'Đường dẫn thư mục hiện tại (lấy từ pwd command)' }
+          projectName: { type: 'string', description: 'Test project name' },
+          template: { type: 'string', description: 'Selected template (e.g., selenium/basic-webdriver)' },
+          workingDirectory: { type: 'string', description: 'Current directory path (from pwd command)' }
         },
         required: ['projectName', 'template', 'workingDirectory']
       },
@@ -323,11 +323,11 @@ export function createTools(browser) {
           if (!templateExists) {
             return {
               success: false,
-              message: `❌ Template "${template}" không tồn tại!`,
+              message: `❌ Template "${template}" does not exist!`,
               data: {
                 requestedTemplate: template,
                 availableTemplates: availableTemplates,
-                suggestion: `Vui lòng chọn một trong các template có sẵn:\n${availableTemplates.map((t, i) => `${i + 1}. ${t.name}`).join('\n')}`
+                suggestion: `Please choose one of the available templates:\n${availableTemplates.map((t, i) => `${i + 1}. ${t.name}`).join('\n')}`
               }
             };
           }
@@ -338,7 +338,7 @@ export function createTools(browser) {
           
           return {
             success: true,
-            message: `✅ Project "${projectName}" đã được tạo thành công với template ${template}`,
+            message: `✅ Project "${projectName}" created successfully with template ${template}`,
             data: {
               projectPath: path.default.join(currentDir, projectName),
               relativePath: `./${projectName}`,
@@ -353,7 +353,7 @@ export function createTools(browser) {
             }
           };
         } catch (error) {
-          return { success: false, message: `Lỗi tạo project: ${error.message}` };
+          return { success: false, message: `Error creating project: ${error.message}` };
         }
       }
     }
