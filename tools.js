@@ -338,7 +338,7 @@ export function createTools(browser) {
           
           return {
             success: true,
-            message: `✅ Project "${projectName}" created successfully with template ${template}`,
+            message: `✅ Project "${projectName}" created successfully with template ${template}. Next: Get guide content to understand the template.`,
             data: {
               projectPath: path.default.join(currentDir, projectName),
               relativePath: `./${projectName}`,
@@ -350,10 +350,53 @@ export function createTools(browser) {
                 'zypin start --packages selenium',
                 template.includes('cucumber') ? 'zypin run --input features/' : 'zypin run --input test.js'
               ]
+            },
+            nextAction: {
+              tool: 'get_guide_content',
+              parameters: { template: template },
+              reason: 'Get guide content to understand the created template'
             }
           };
         } catch (error) {
           return { success: false, message: `Error creating project: ${error.message}` };
+        }
+      }
+    },
+    {
+      name: 'get_guide_content',
+      description: 'Get guide content for a template',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          template: { type: 'string', description: 'Template name (e.g., selenium/cucumber-bdd)' }
+        },
+        required: ['template']
+      },
+      handler: async ({ template }) => {
+        try {
+          const { execSync } = await import('child_process');
+          const fs = await import('fs');
+          const path = await import('path');
+          
+          // Use zypin CLI to get guide content
+          const command = `zypin guide --template ${template}`;
+          const output = execSync(command, { encoding: 'utf8', stdio: 'pipe' });
+          
+          return {
+            success: true,
+            data: {
+              template,
+              content: output,
+              message: `Guide content retrieved for template: ${template}`
+            },
+            message: `📚 Guide content for ${template}`
+          };
+        } catch (error) {
+          return { 
+            success: false, 
+            message: `Error getting guide content: ${error.message}`,
+            data: { template, error: error.message }
+          };
         }
       }
     }
