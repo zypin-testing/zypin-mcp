@@ -38,7 +38,7 @@ export function createTools(browser) {
           if (fs.existsSync(packagePath)) {
             const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
             result.push({
-              name: template.name,
+              name: template.namespacedName,
               description: pkg.description || template.name
             });
           }
@@ -66,10 +66,10 @@ export function createTools(browser) {
       },
       handler: ({ projectName, template, workingDirectory }) => {
         const command = `zypin create-project ${projectName} --template ${template} --force`;
-        execSync(command, { stdio: 'pipe', cwd: workingDirectory });
+        const result = execSync(command, { stdio: 'pipe', cwd: workingDirectory, encoding: 'utf8' });
 
         return {
-          message: `✅ Project "${projectName}" created with template ${template}`,
+          message: result,
           projectPath: path.join(workingDirectory, projectName),
           nextSteps: [`cd ${projectName}`, 'npm install'],
           guidance: {
