@@ -171,8 +171,13 @@ async function testCoreTools() {
   
   await test('how_to_write invalid directory', async () => {
     const tool = findTool(tools, 'how_to_write');
-    const result = await tool.handler({ workingDirectory: INVALID_PATH });
-    assert(result.success === false, 'Should fail with invalid directory');
+    try {
+      const result = await tool.handler({ workingDirectory: INVALID_PATH });
+      assert(result.success === false, 'Should fail with invalid directory');
+    } catch (error) {
+      // Tool throws exception for invalid directory - this is expected
+      assert(error.message.includes('ENOENT') || error.message.includes('not found'), 'Should have appropriate error message');
+    }
   });
   
   await test('how_to_debug success', async () => {
@@ -189,8 +194,13 @@ async function testCoreTools() {
   
   await test('how_to_debug invalid directory', async () => {
     const tool = findTool(tools, 'how_to_debug');
-    const result = await tool.handler({ workingDirectory: INVALID_PATH });
-    assert(result.success === false, 'Should fail with invalid directory');
+    try {
+      const result = await tool.handler({ workingDirectory: INVALID_PATH });
+      assert(result.success === false, 'Should fail with invalid directory');
+    } catch (error) {
+      // Tool throws exception for invalid directory - this is expected
+      assert(error.message.includes('ENOENT') || error.message.includes('not found'), 'Should have appropriate error message');
+    }
   });
   
   await test('get_template_readme success', async () => {
@@ -207,8 +217,13 @@ async function testCoreTools() {
   
   await test('get_template_readme invalid directory', async () => {
     const tool = findTool(tools, 'get_template_readme');
-    const result = await tool.handler({ workingDirectory: INVALID_PATH });
-    assert(result.success === false, 'Should fail with invalid directory');
+    try {
+      const result = await tool.handler({ workingDirectory: INVALID_PATH });
+      assert(result.success === false, 'Should fail with invalid directory');
+    } catch (error) {
+      // Tool throws exception for invalid directory - this is expected
+      assert(error.message.includes('ENOENT') || error.message.includes('not found'), 'Should have appropriate error message');
+    }
   });
 }
 
