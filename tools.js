@@ -12,7 +12,7 @@ import { createPlaywrightTools } from './tools-playwright.js';
 
 export function createTools(browser) {
   const playwrightTools = createPlaywrightTools(browser);
-  
+
   return [
     ...playwrightTools,
 
@@ -26,22 +26,18 @@ export function createTools(browser) {
         required: []
       },
       handler: async () => {
-        try {
-          const { execSync } = await import('child_process');
-          
-          const command = `zypin create-project --help`;
-          const helpOutput = execSync(command, { encoding: 'utf8', stdio: 'pipe' });
-          
-          const templates = parseTemplatesFromHelp(helpOutput);
-          
-          return {
-            success: true,
-            message: `📋 Available Templates:\n${templates.map((t, i) => `${i + 1}. ${t.name} - ${t.description}`).join('\n')}`,
-            templates: templates
-          };
-        } catch (error) {
-          return { success: false, message: `Error getting templates: ${error.message}` };
-        }
+        const { execSync } = await import('child_process');
+
+        const command = `zypin create-project --help`;
+        const helpOutput = execSync(command, { encoding: 'utf8', stdio: 'pipe' });
+
+        const templates = parseTemplatesFromHelp(helpOutput);
+
+        return {
+          success: true,
+          message: `📋 Available Templates:\n${templates.map((t, i) => `${i + 1}. ${t.name} - ${t.description}`).join('\n')}`,
+          templates: templates
+        };
       }
     },
 
@@ -59,25 +55,21 @@ export function createTools(browser) {
         required: ['projectName', 'template', 'workingDirectory']
       },
       handler: async ({ projectName, template, workingDirectory }) => {
-        try {
-          const { execSync } = await import('child_process');
-          const path = await import('path');
-          
-          const command = `zypin create-project ${projectName} --template ${template} --force`;
-          execSync(command, { stdio: 'pipe', cwd: workingDirectory });
-          
-          return {
-            success: true,
-            message: `✅ Project "${projectName}" created with template ${template}`,
-            projectPath: path.default.join(workingDirectory, projectName),
-            nextSteps: [
-              `cd ${projectName}`,
-              'npm install'
-            ]
-          };
-        } catch (error) {
-          return { success: false, message: `Error creating project: ${error.message}` };
-        }
+        const { execSync } = await import('child_process');
+        const path = await import('path');
+
+        const command = `zypin create-project ${projectName} --template ${template} --force`;
+        execSync(command, { stdio: 'pipe', cwd: workingDirectory });
+
+        return {
+          success: true,
+          message: `✅ Project "${projectName}" created with template ${template}`,
+          projectPath: path.default.join(workingDirectory, projectName),
+          nextSteps: [
+            `cd ${projectName}`,
+            'npm install'
+          ]
+        };
       }
     },
 
@@ -93,20 +85,16 @@ export function createTools(browser) {
         required: ['workingDirectory']
       },
       handler: async ({ workingDirectory }) => {
-        try {
-          const { execSync } = await import('child_process');
-          
-          const command = `zypin guide --write`;
-          const output = execSync(command, { encoding: 'utf8', stdio: 'pipe', cwd: workingDirectory });
-          
-          return {
-            success: true,
-            message: `📚 Writing Guide`,
-            content: output
-          };
-        } catch (error) {
-          return { success: false, message: `Error getting writing guide: ${error.message}` };
-        }
+        const { execSync } = await import('child_process');
+
+        const command = `zypin guide --write`;
+        const output = execSync(command, { encoding: 'utf8', stdio: 'pipe', cwd: workingDirectory });
+
+        return {
+          success: true,
+          message: `📚 Writing Guide`,
+          content: output
+        };
       }
     },
 
@@ -122,20 +110,16 @@ export function createTools(browser) {
         required: ['workingDirectory']
       },
       handler: async ({ workingDirectory }) => {
-        try {
-          const { execSync } = await import('child_process');
-          
-          const command = `zypin guide --debugging`;
-          const output = execSync(command, { encoding: 'utf8', stdio: 'pipe', cwd: workingDirectory });
-          
-          return {
-            success: true,
-            message: `🐛 Debugging Guide`,
-            content: output
-          };
-        } catch (error) {
-          return { success: false, message: `Error getting debugging guide: ${error.message}` };
-        }
+        const { execSync } = await import('child_process');
+
+        const command = `zypin guide --debugging`;
+        const output = execSync(command, { encoding: 'utf8', stdio: 'pipe', cwd: workingDirectory });
+
+        return {
+          success: true,
+          message: `🐛 Debugging Guide`,
+          content: output
+        };
       }
     }
   ];
@@ -146,30 +130,30 @@ function parseTemplatesFromHelp(helpOutput) {
   const lines = helpOutput.split('\n');
   const templates = [];
   let inTemplateSection = false;
-  
+
   for (const line of lines) {
     if (line.includes('Available Templates:') || line.includes('📋 Available Templates:')) {
       inTemplateSection = true;
       continue;
     }
-    
+
     if (inTemplateSection && (line.includes('Usage Examples:') || line.includes('💡 Usage Examples:'))) {
       break;
     }
-    
+
     if (inTemplateSection) {
       const templateMatch = line.match(/●\s+(\w+)\/([\w-]+)/);
       if (templateMatch) {
         const packageName = templateMatch[1];
         const templateName = templateMatch[2];
         const fullName = `${packageName}/${templateName}`;
-        
+
         let description = fullName;
         const descMatch = line.match(/●\s+\w+\/[\w-]+\s+(.+)/);
         if (descMatch) {
           description = descMatch[1].trim();
         }
-        
+
         templates.push({
           name: fullName,
           description: description
@@ -177,6 +161,6 @@ function parseTemplatesFromHelp(helpOutput) {
       }
     }
   }
-  
+
   return templates;
 }
