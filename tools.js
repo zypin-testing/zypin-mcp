@@ -93,7 +93,7 @@ export function createTools(browser) {
       },
       handler: ({ template }) => {
         const templates = templateScanner.getTemplates();
-        const foundTemplate = templates.find(t => t.name === template);
+        const foundTemplate = templates.find(t => t.namespacedName === template);
         
         if (!foundTemplate) {
           throw new Error(`Template "${template}" not found`);
