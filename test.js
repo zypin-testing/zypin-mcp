@@ -2,7 +2,7 @@
 
 /**
  * Comprehensive unit tests for Zypin MCP
- * Tests all 4 core tools and 16 Playwright tools with minimal code
+ * Tests all 5 core tools and 16 Playwright tools with minimal code
  * 
  * TODO:
  * - Add performance benchmarking tests
@@ -74,6 +74,18 @@ async function injectInteractiveElements(tools) {
       input.placeholder = 'Test Input';
       document.body.appendChild(input);
       
+      const select = document.createElement('select');
+      select.id = 'test-select';
+      const option1 = document.createElement('option');
+      option1.value = 'option1';
+      option1.textContent = 'Option 1';
+      const option2 = document.createElement('option');
+      option2.value = 'option2';
+      option2.textContent = 'Option 2';
+      select.appendChild(option1);
+      select.appendChild(option2);
+      document.body.appendChild(select);
+      
       const link = document.createElement('a');
       link.href = '#';
       link.textContent = 'Test Link';
@@ -130,6 +142,7 @@ async function testCoreTools() {
       workingDirectory: tempDir
     });
     
+    // Should either succeed (if template exists) or fail gracefully
     if (result.success) {
       assert(result.projectPath.includes('test-project-invalid'), 'Should return project path');
     } else {
@@ -148,6 +161,7 @@ async function testCoreTools() {
     const tool = findTool(tools, 'how_to_write');
     const result = await tool.handler({ workingDirectory: `${tempDir}/${GUIDE_PROJECT_NAME}` });
     
+    // Should either succeed with content or fail gracefully
     if (result.success) {
       assert(typeof result.content === 'string', 'Should return guide content');
     } else {
@@ -165,6 +179,7 @@ async function testCoreTools() {
     const tool = findTool(tools, 'how_to_debug');
     const result = await tool.handler({ workingDirectory: `${tempDir}/${GUIDE_PROJECT_NAME}` });
     
+    // Should either succeed with content or fail gracefully
     if (result.success) {
       assert(typeof result.content === 'string', 'Should return guide content');
     } else {
@@ -174,6 +189,24 @@ async function testCoreTools() {
   
   await test('how_to_debug invalid directory', async () => {
     const tool = findTool(tools, 'how_to_debug');
+    const result = await tool.handler({ workingDirectory: INVALID_PATH });
+    assert(result.success === false, 'Should fail with invalid directory');
+  });
+  
+  await test('get_template_readme success', async () => {
+    const tool = findTool(tools, 'get_template_readme');
+    const result = await tool.handler({ workingDirectory: `${tempDir}/${GUIDE_PROJECT_NAME}` });
+    
+    // Should either succeed with content or fail gracefully
+    if (result.success) {
+      assert(typeof result.content === 'string', 'Should return README content');
+    } else {
+      assert(result.message.includes('guide') || result.message.includes('not found'), 'Should have appropriate error message');
+    }
+  });
+  
+  await test('get_template_readme invalid directory', async () => {
+    const tool = findTool(tools, 'get_template_readme');
     const result = await tool.handler({ workingDirectory: INVALID_PATH });
     assert(result.success === false, 'Should fail with invalid directory');
   });
@@ -226,23 +259,17 @@ async function testPlaywrightTools() {
     });
     
     await test('type success', async () => {
+      await injectInteractiveElements(tools);
       const tool = findTool(tools, 'type');
-      try {
-        const result = await tool.handler({ selector: 'body', text: 'test' });
-        assert(result.success === true, 'Should type successfully');
-      } catch (error) {
-        assert(error.message.includes('not an') || error.message.includes('input'), 'Should have appropriate error message');
-      }
+      const result = await tool.handler({ selector: '#test-input', text: 'test' });
+      assert(result.success === true, 'Should type successfully');
     });
     
     await test('select success', async () => {
+      await injectInteractiveElements(tools);
       const tool = findTool(tools, 'select');
-      try {
-        const result = await tool.handler({ selector: 'body', value: 'test' });
-        assert(result.success === true, 'Should select successfully');
-      } catch (error) {
-        assert(error.message.includes('not a') || error.message.includes('select'), 'Should have appropriate error message');
-      }
+      const result = await tool.handler({ selector: '#test-select', value: 'option1' });
+      assert(result.success === true, 'Should select successfully');
     });
     
     await test('fill_form success', async () => {

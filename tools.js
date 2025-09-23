@@ -121,6 +121,31 @@ export function createTools(browser) {
           content: output
         };
       }
+    },
+
+    // 5. Get Template README
+    {
+      name: 'get_template_readme',
+      description: 'Get README guide for current project template',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          workingDirectory: { type: 'string', description: 'Project directory path' }
+        },
+        required: ['workingDirectory']
+      },
+      handler: async ({ workingDirectory }) => {
+        const { execSync } = await import('child_process');
+
+        const command = `zypin guide --readme`;
+        const output = execSync(command, { encoding: 'utf8', stdio: 'pipe', cwd: workingDirectory });
+
+        return {
+          success: true,
+          message: `📖 Template README`,
+          content: output
+        };
+      }
     }
   ];
 }
