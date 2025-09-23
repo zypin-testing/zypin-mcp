@@ -1,6 +1,6 @@
 /**
  * MCP tools implementation for Zypin MCP
- * Minimalist version with 4 core tools: get_available_templates, create_template, how_to_write, how_to_debug
+ * Minimalist version with 3 core tools: get_zypin_templates, create_zypin_template, get_template_info
  * 
  * TODO:
  * - Add template validation before creation
@@ -9,6 +9,10 @@
  */
 
 import { createPlaywrightTools } from './tools-playwright.js';
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import templateScanner from 'zypin-core/core/template-scanner.js';
 
 export function createTools(browser) {
   const playwrightTools = createPlaywrightTools(browser);
@@ -16,35 +20,41 @@ export function createTools(browser) {
   return [
     ...playwrightTools,
 
-    // 1. Get Available Templates
+    // 1. Get Zypin Templates
     {
-      name: 'get_available_templates',
-      description: 'Get list of available Zypin templates',
+      name: 'get_zypin_templates',
+      description: 'Get available Zypin templates with descriptions',
       inputSchema: {
         type: 'object',
         properties: {},
         required: []
       },
-      handler: async () => {
-        const { execSync } = await import('child_process');
-
-        const command = `zypin create-project --help`;
-        const helpOutput = execSync(command, { encoding: 'utf8', stdio: 'pipe' });
-
-        const templates = parseTemplatesFromHelp(helpOutput);
-
+      handler: () => {
+        const templates = templateScanner.getTemplates();
+        
+        const result = [];
+        for (const template of templates) {
+          const packagePath = path.join(template.path, 'package.json');
+          if (fs.existsSync(packagePath)) {
+            const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+            result.push({
+              name: template.name,
+              description: pkg.description || template.name
+            });
+          }
+        }
+        
         return {
-          success: true,
-          message: `📋 Available Templates:\n${templates.map((t, i) => `${i + 1}. ${t.name} - ${t.description}`).join('\n')}`,
-          templates: templates
+          message: `📋 Available Templates:\n${result.map((t, i) => `${i + 1}. ${t.name} - ${t.description}`).join('\n')}`,
+          templates: result
         };
       }
     },
 
-    // 2. Create Template
+    // 2. Create Zypin Template
     {
-      name: 'create_template',
-      description: 'Create a new test project from template',
+      name: 'create_zypin_template',
+      description: 'Create new project from Zypin template',
       inputSchema: {
         type: 'object',
         properties: {
@@ -54,138 +64,52 @@ export function createTools(browser) {
         },
         required: ['projectName', 'template', 'workingDirectory']
       },
-      handler: async ({ projectName, template, workingDirectory }) => {
-        const { execSync } = await import('child_process');
-        const path = await import('path');
-
+      handler: ({ projectName, template, workingDirectory }) => {
         const command = `zypin create-project ${projectName} --template ${template} --force`;
         execSync(command, { stdio: 'pipe', cwd: workingDirectory });
 
         return {
-          success: true,
           message: `✅ Project "${projectName}" created with template ${template}`,
-          projectPath: path.default.join(workingDirectory, projectName),
-          nextSteps: [
-            `cd ${projectName}`,
-            'npm install'
-          ]
+          projectPath: path.join(workingDirectory, projectName),
+          nextSteps: [`cd ${projectName}`, 'npm install'],
+          guidance: {
+            write: 'zypin guide --write',
+            debug: 'zypin guide --debug'
+          }
         };
       }
     },
 
-    // 3. How to Write
+    // 3. Get Template Info
     {
-      name: 'how_to_write',
-      description: 'Get writing guide for current project template',
+      name: 'get_template_info',
+      description: 'Get detailed information about a specific template',
       inputSchema: {
         type: 'object',
         properties: {
-          workingDirectory: { type: 'string', description: 'Project directory path' }
+          template: { type: 'string', description: 'Template name (e.g., selenium/cucumber-bdd)' }
         },
-        required: ['workingDirectory']
+        required: ['template']
       },
-      handler: async ({ workingDirectory }) => {
-        const { execSync } = await import('child_process');
+      handler: ({ template }) => {
+        const templates = templateScanner.getTemplates();
+        const foundTemplate = templates.find(t => t.name === template);
+        
+        if (!foundTemplate) {
+          throw new Error(`Template "${template}" not found`);
+        }
 
-        const command = `zypin guide --write`;
-        const output = execSync(command, { encoding: 'utf8', stdio: 'pipe', cwd: workingDirectory });
+        const readmePath = path.join(foundTemplate.path, 'README.md');
+        if (!fs.existsSync(readmePath)) {
+          throw new Error(`README.md not found for template "${template}"`);
+        }
 
+        const content = fs.readFileSync(readmePath, 'utf8');
         return {
-          success: true,
-          message: `📚 Writing Guide`,
-          content: output
-        };
-      }
-    },
-
-    // 4. How to Debug
-    {
-      name: 'how_to_debug',
-      description: 'Get debugging guide for current project template',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          workingDirectory: { type: 'string', description: 'Project directory path' }
-        },
-        required: ['workingDirectory']
-      },
-      handler: async ({ workingDirectory }) => {
-        const { execSync } = await import('child_process');
-
-        const command = `zypin guide --debugging`;
-        const output = execSync(command, { encoding: 'utf8', stdio: 'pipe', cwd: workingDirectory });
-
-        return {
-          success: true,
-          message: `🐛 Debugging Guide`,
-          content: output
-        };
-      }
-    },
-
-    // 5. Get Template README
-    {
-      name: 'get_template_readme',
-      description: 'Get README guide for current project template',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          workingDirectory: { type: 'string', description: 'Project directory path' }
-        },
-        required: ['workingDirectory']
-      },
-      handler: async ({ workingDirectory }) => {
-        const { execSync } = await import('child_process');
-
-        const command = `zypin guide --readme`;
-        const output = execSync(command, { encoding: 'utf8', stdio: 'pipe', cwd: workingDirectory });
-
-        return {
-          success: true,
-          message: `📖 Template README`,
-          content: output
+          message: `📖 Template Info: ${template}`,
+          content: content
         };
       }
     }
   ];
-}
-
-// Helper function to parse templates from help output
-function parseTemplatesFromHelp(helpOutput) {
-  const lines = helpOutput.split('\n');
-  const templates = [];
-  let inTemplateSection = false;
-
-  for (const line of lines) {
-    if (line.includes('Available Templates:') || line.includes('📋 Available Templates:')) {
-      inTemplateSection = true;
-      continue;
-    }
-
-    if (inTemplateSection && (line.includes('Usage Examples:') || line.includes('💡 Usage Examples:'))) {
-      break;
-    }
-
-    if (inTemplateSection) {
-      const templateMatch = line.match(/●\s+(\w+)\/([\w-]+)/);
-      if (templateMatch) {
-        const packageName = templateMatch[1];
-        const templateName = templateMatch[2];
-        const fullName = `${packageName}/${templateName}`;
-
-        let description = fullName;
-        const descMatch = line.match(/●\s+\w+\/[\w-]+\s+(.+)/);
-        if (descMatch) {
-          description = descMatch[1].trim();
-        }
-
-        templates.push({
-          name: fullName,
-          description: description
-        });
-      }
-    }
-  }
-
-  return templates;
 }

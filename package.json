@@ -17,7 +17,8 @@
   "dependencies": {
     "playwright-core": "^1.40.0",
     "@modelcontextprotocol/sdk": "^1.17.5",
-    "commander": "^11.0.0"
+    "commander": "^11.0.0",
+    "zypin-core": "https://github.com/zypin-testing/zypin-core"
   },
   "keywords": [
     "mcp",
