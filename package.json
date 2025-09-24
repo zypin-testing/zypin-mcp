@@ -1,7 +1,7 @@
 {
   "name": "zypin-mcp",
   "version": "1.0.0",
-  "description": "Simple MCP server for browser automation using Playwright",
+  "description": "Generic MCP server for testing automation and tool integration",
   "main": "index.js",
   "type": "module",
   "engines": {
@@ -22,9 +22,10 @@
   },
   "keywords": [
     "mcp",
-    "playwright",
-    "browser-automation",
-    "ai"
+    "automation",
+    "testing",
+    "tools",
+    "integration"
   ],
   "author": "Zypin",
   "license": "MIT"

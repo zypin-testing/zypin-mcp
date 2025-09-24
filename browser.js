@@ -1,5 +1,5 @@
 /**
- * Simple browser wrapper for Zypin MCP
+ * Generic browser wrapper for Zypin MCP
  * Provides essential browser automation methods using Playwright
  * 
  * TODO:

@@ -1,11 +1,11 @@
 # Zypin MCP
 
-A simple MCP (Model Context Protocol) server for browser automation using Playwright. This is a simplified version that focuses on essential browser automation features without the complexity of the full Playwright MCP server.
+A generic MCP (Model Context Protocol) server for testing automation and tool integration. This server provides essential automation capabilities with a focus on simplicity and reliability.
 
 ## Features
 
 - **Simple Setup**: Minimal configuration and dependencies
-- **Essential Tools**: Core browser automation functionality
+- **Essential Tools**: Core automation functionality
 - **Fast**: Lightweight implementation with minimal overhead
 - **Reliable**: Focused on the most commonly used features
 
@@ -26,7 +26,7 @@ zypin-mcp/
 ### File Descriptions
 
 - **`index.js`**: Main entry point that sets up the MCP server, handles CLI arguments, and manages the browser lifecycle
-- **`browser.js`**: Simple wrapper around Playwright that provides essential browser automation methods
+- **`browser.js`**: Simple wrapper around Playwright that provides essential automation methods
 - **`tools.js`**: Defines all 16 MCP tools with their schemas and handlers
 - **`test.js`**: Basic test suite to verify core functionality
 - **`.gitignore`**: Minimal git ignore rules for essential exclusions
@@ -54,7 +54,7 @@ The project follows a simple, modular architecture:
 1. **MCP Client** sends requests to the server via STDIO transport
 2. **index.js** receives MCP protocol messages and routes them to appropriate handlers
 3. **tools.js** defines the available tools and their schemas
-4. **browser.js** executes the actual browser automation commands
+4. **browser.js** executes the actual automation commands
 
 ### Key Design Principles
 
@@ -187,7 +187,7 @@ zypin start --packages selenium
 # 3. Run traditional tests
 zypin run --input test.js
 
-# 4. Start MCP server for browser automation
+# 4. Start MCP server for testing automation
 zypin mcp --browser chromium --headed
 
 # 5. Update everything

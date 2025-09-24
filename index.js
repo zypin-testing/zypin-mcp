@@ -2,11 +2,11 @@
 
 /**
  * Zypin MCP Server - Main Entry Point
- * Simple MCP (Model Context Protocol) server for browser automation using Playwright
+ * Generic MCP (Model Context Protocol) server for testing automation and tool integration
  * 
  * TODO:
- * - Add support for multiple browser contexts
- * - Implement browser session persistence
+ * - Add support for multiple tool contexts
+ * - Implement tool session persistence
  * - Add more advanced error handling and recovery
  * - Support for custom tool plugins
  * - Add performance monitoring and metrics
@@ -22,7 +22,7 @@ import { createTools } from './tools.js';
 
 program
   .name('zypin-mcp')
-  .description('Simple MCP server for browser automation')
+  .description('Generic MCP server for testing automation and tool integration')
   .version('1.0.0')
   .option('-b, --browser <browser>', 'Browser to use (chromium, firefox, webkit)', 'chromium')
   .option('-h, --headless', 'Run browser in headless mode', true)
@@ -71,7 +71,7 @@ async function main() {
       }
     );
 
-    // Register all available browser automation tools
+    // Register all available automation tools
     const tools = createTools(browser);
     
     // Handle tool execution requests from MCP clients

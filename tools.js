@@ -1,11 +1,11 @@
 /**
  * MCP tools implementation for Zypin MCP
- * Minimalist version with 3 core tools: get_zypin_templates, create_zypin_template, get_template_info
+ * Generic tool collection with browser automation and template management
  * 
  * TODO:
  * - Add template validation before creation
  * - Improve error messages with specific CLI command suggestions
- * - Add support for custom template parameters
+ * - Add support for custom tool parameters
  */
 
 import { createPlaywrightTools } from './tools-playwright.js';

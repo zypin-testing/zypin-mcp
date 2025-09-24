@@ -1,5 +1,5 @@
 /**
- * Playwright browser automation tools for Zypin MCP
+ * Browser automation tools for Zypin MCP
  * Defines all available browser automation tools with their schemas and handlers
  * 
  * TODO:
